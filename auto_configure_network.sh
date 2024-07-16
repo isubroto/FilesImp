@@ -1,3 +1,8 @@
+#                             Online Bash Shell.
+#                 Code, Compile, Run and Debug Bash script online.
+# Write your code in this editor and press "Run" button to execute it.
+
+
 #!/bin/bash
 
 # Function to calculate broadcast address
@@ -5,10 +10,14 @@ calculate_broadcast() {
     local ip="$1"
     local cidr="$2"
     
-    IFS=. read -r i1 i2 i3 i4 <<< "$ip"
+    # Convert CIDR to netmask
     local mask=$(( 0xffffffff ^ ((1 << (32 - cidr)) - 1) ))
-    local broadcast=$(( (ip & mask) | ~mask ))
-
+    
+    IFS=. read -r i1 i2 i3 i4 <<< "$ip"
+    local ip_num=$(( (i1 << 24) + (i2 << 16) + (i3 << 8) + i4 ))
+    
+    local broadcast=$(( (ip_num & mask) | ~mask & 0xffffffff ))
+    
     printf "%d.%d.%d.%d" \
         $(( (broadcast >> 24) & 0xff )) \
         $(( (broadcast >> 16) & 0xff )) \
@@ -30,7 +39,15 @@ calculate_network() {
         $(( (mask & (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 8 & 0xff )) \
         $(( (mask & (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 0 & 0xff ))
 }
+# Function to calculate the gateway address
+calculate_gateway() {
+    local network_address="$1"
+    
+    IFS=. read -r n1 n2 n3 n4 <<< "$network_address"
+    local gateway=$(( n4 + 1 ))
 
+    printf "%d.%d.%d.%d" "$n1" "$n2" "$n3" "$gateway"
+}
 # Function to apply network settings
 apply_network_settings() {
     local interface="$1"
@@ -47,13 +64,13 @@ apply_network_settings() {
     
     local broadcast_address=$(calculate_broadcast "$ip" "$cidr")
     local network_address=$(calculate_network "$ip" "$cidr")
-    local gateway="${network_address%.*}.1"
+    local gateway=$(calculate_gateway "$network_address")
     local dns_server="8.8.8.8"
     
     echo "Flushing existing IP configuration on $interface..."
     sudo ip addr flush dev "$interface"
     
-    echo "Adding IP address $ip/$cidr to $interface..."
+    echo "Adding IP address $ip/$cidr and broadcast $broadcast_address to $interface..."
     sudo ip addr add "$ip/$cidr" broadcast "$broadcast_address" dev "$interface"
     
     echo "Setting default gateway to $gateway..."
