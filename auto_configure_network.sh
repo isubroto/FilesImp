@@ -7,12 +7,13 @@ calculate_broadcast() {
     
     IFS=. read -r i1 i2 i3 i4 <<< "$ip"
     local mask=$(( 0xffffffff ^ ((1 << (32 - cidr)) - 1) ))
-    
+    local broadcast=$(( (ip & mask) | ~mask ))
+
     printf "%d.%d.%d.%d" \
-        $(( (mask | (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 24 & 0xff )) \
-        $(( (mask | (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 16 & 0xff )) \
-        $(( (mask | (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 8 & 0xff )) \
-        $(( (mask | (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 0 & 0xff ))
+        $(( (broadcast >> 24) & 0xff )) \
+        $(( (broadcast >> 16) & 0xff )) \
+        $(( (broadcast >> 8) & 0xff )) \
+        $(( broadcast & 0xff ))
 }
 
 # Function to calculate network address
@@ -52,8 +53,8 @@ apply_network_settings() {
     echo "Flushing existing IP configuration on $interface..."
     sudo ip addr flush dev "$interface"
     
-    echo "Adding IP address $ip_with_cidr to $interface..."
-    sudo ip addr add "$ip_with_cidr" broadcast "$broadcast_address" dev "$interface"
+    echo "Adding IP address $ip/$cidr to $interface..."
+    sudo ip addr add "$ip/$cidr" broadcast "$broadcast_address" dev "$interface"
     
     echo "Setting default gateway to $gateway..."
     sudo ip route add default via "$gateway"
