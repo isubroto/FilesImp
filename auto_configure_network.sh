@@ -1,8 +1,3 @@
-#                             Online Bash Shell.
-#                 Code, Compile, Run and Debug Bash script online.
-# Write your code in this editor and press "Run" button to execute it.
-
-
 #!/bin/bash
 
 # Function to calculate broadcast address
@@ -39,6 +34,7 @@ calculate_network() {
         $(( (mask & (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 8 & 0xff )) \
         $(( (mask & (i1 << 24 | i2 << 16 | i3 << 8 | i4)) >> 0 & 0xff ))
 }
+
 # Function to calculate the gateway address
 calculate_gateway() {
     local network_address="$1"
@@ -48,6 +44,7 @@ calculate_gateway() {
 
     printf "%d.%d.%d.%d" "$n1" "$n2" "$n3" "$gateway"
 }
+
 # Function to apply network settings
 apply_network_settings() {
     local interface="$1"
