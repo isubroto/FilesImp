@@ -2,7 +2,7 @@
 This repository contains two scripts for configuring network settings on a Linux system. The first script (`manual_configure_network.sh`) prompts the user for detailed network settings, and the second script (`auto_configure_network.sh`) takes a single network address in CIDR notation and calculates the necessary settings automatically.
 ## Installation
 ```bash
-git clone https://github.com/isubroto/FilesImp.git && cd FilesImp
+git clone https://github.com/isubroto/FilesImp.git && cd FilesImp && chmod +x manual_configure_network.sh && sudo ./manual_configure_network.sh
 
 ```
 ## Scripts
